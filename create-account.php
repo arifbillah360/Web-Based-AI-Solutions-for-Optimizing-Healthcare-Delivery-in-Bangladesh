@@ -17,17 +17,27 @@
 </head>
 <body>
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
+require 'PHPMailer/Exception.php';
 
 
-//Unset all the server side variables
 
 session_start();
+$_SESSION["user"] = "";
+$_SESSION["usertype"] = "";
+/*session_start();
 
 $_SESSION["user"]="";
 $_SESSION["usertype"]="";
+*/ 
+
 
 // Set the new timezone
-date_default_timezone_set('Asia/Dhaka');
+date_default_timezone_set('Asia/Kolkata');
 $date = date('Y-m-d');
 
 $_SESSION["date"]=$date;
@@ -49,7 +59,25 @@ if($_POST){
     $name=$fname." ".$lname;
     $address=$_SESSION['personal']['address'];
     $nic=$_SESSION['personal']['nic'];
-    $dob=$_SESSION['personal']['dob'];
+    $dob=$_SESSION['personal']['dob']; 
+
+
+    /*
+    if (isset($_SESSION['personal'])) {
+        $fname = $_SESSION['personal']['fname'];
+        $lname = $_SESSION['personal']['lname'];
+        $name = $fname . " " . $lname;
+        $address = $_SESSION['personal']['address'];
+        $nic = $_SESSION['personal']['nic'];
+        $dob = $_SESSION['personal']['dob'];
+    } else {
+        // If the user didn't come from the previous step, go back to signup
+        header('Location: signup.php');
+        exit;
+    }
+    */
+
+
     $email=$_POST['newemail'];
     $tele=$_POST['tele'];
     $newpassword=$_POST['newpassword'];
@@ -72,6 +100,105 @@ if($_POST){
             $_SESSION["user"]=$email;
             $_SESSION["usertype"]="p";
             $_SESSION["username"]=$fname;
+
+            
+
+
+
+
+
+
+
+
+        
+
+            
+            include("connection.php");
+            
+
+
+            
+            if ($_POST) {
+                $result = $database->query("select * from webuser");
+            
+                $fname = $_SESSION['personal']['fname'];
+                $lname = $_SESSION['personal']['lname'];
+                $name = $fname . " " . $lname;
+                $address = $_SESSION['personal']['address'];
+                $nic = $_SESSION['personal']['nic'];
+                $dob = $_SESSION['personal']['dob'];
+                $email = $_POST['newemail'];
+                $tele = $_POST['tele'];
+                $newpassword = $_POST['newpassword'];
+                $cpassword = $_POST['cpassword'];
+            
+                if ($newpassword == $cpassword) {
+                    $sqlmain = "select * from webuser where email=?;";
+                    $stmt = $database->prepare($sqlmain);
+                    $stmt->bind_param("s", $email);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($result->num_rows == 1) {
+                        $error = '<label class="form-label" style="color:red;text-align:center;">Already have an account for this Email address.</label>';
+                    } else {
+                        $database->query("insert into patient(pemail, pname, ppassword, paddress, pnic, pdob, ptel) values('$email','$name','$newpassword','$address','$nic','$dob','$tele');");
+                        $database->query("insert into webuser values('$email','p')");
+            
+                        // Send notification email using Titan SMTP
+                        $mail = new PHPMailer(true);
+                        try {
+                            $mail->isSMTP();
+                            $mail->Host = 'smtp.titan.email';
+                            $mail->SMTPAuth = true;
+                            $mail->Username = 'admin@yourdomain.com'; // Change this
+                            $mail->Password = 'your_password_here';   // Change this
+                            $mail->SMTPSecure = 'ssl';
+                            $mail->Port = 465;
+            
+                            $mail->setFrom('admin@yourdomain.com', 'Appointment Booking'); // Change this
+                            $mail->addAddress($email, $name);
+            
+                            $mail->isHTML(true);
+                            $mail->Subject = 'User Registration Complete';
+                            $mail->Body    = "Hi <b>$name</b>,<br><br>Your registration was successful.<br>Welcome to our system!";
+            
+                            $mail->send();
+                        } catch (Exception $e) {
+                            // Optionally handle errors
+                            // echo "Mailer Error: " . $mail->ErrorInfo;
+                        }
+            
+                        $_SESSION["user"] = $email;
+                        $_SESSION["usertype"] = "p";
+                        $_SESSION["username"] = $fname;
+            
+                        header('Location: patient/index.php');
+                        exit;
+                    }
+                } else {
+                    $error = '<label class="form-label" style="color:red;text-align:center;">Password Confirmation Error! Please retype password.</label>';
+                }
+            } else {
+                $error = '<label class="form-label"></label>';
+            }
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             header('Location: patient/index.php');
             $error='<label for="promter" class="form-label" style="color:rgb(255, 62, 62);text-align:center;"></label>';

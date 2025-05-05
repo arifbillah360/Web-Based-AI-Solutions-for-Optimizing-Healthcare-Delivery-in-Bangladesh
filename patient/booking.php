@@ -37,17 +37,25 @@
     }
     
 
-    //import database
-    include("../connection.php");
+// Import database
+include("../connection.php");
 
-    $sqlmain= "select * from patient where pemail=?";
-    $stmt = $database->prepare($sqlmain);
-    $stmt->bind_param("s",$useremail);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $userfetch=$userrow->fetch_assoc();
-    $userid= $userfetch["pid"];
-    $username=$userfetch["pname"];
+// Prepare and execute query
+$sqlmain = "SELECT * FROM patient WHERE pemail=?";
+$stmt = $database->prepare($sqlmain);
+$stmt->bind_param("s", $useremail);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Check if any rows are returned
+if ($result && $userfetch = $result->fetch_assoc()) {
+    $userid = $userfetch["pid"];
+    $username = $userfetch["pname"];
+} else {
+    // Handle case where no user is found
+    echo "No user found with the email: $useremail";
+}
+
 
 
     //echo $userid;
