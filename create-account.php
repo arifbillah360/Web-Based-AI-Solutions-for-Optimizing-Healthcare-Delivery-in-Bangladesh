@@ -150,12 +150,12 @@ if($_POST){
                             $mail->isSMTP();
                             $mail->Host = 'smtp.titan.email';
                             $mail->SMTPAuth = true;
-                            $mail->Username = 'admin@yourdomain.com'; // Change this
-                            $mail->Password = 'your_password_here';   // Change this
+                            $mail->Username = 'test@busybeetaxservices.com'; 
+                            $mail->Password = 'Qi8KqJVQ2AbyVU##';   
                             $mail->SMTPSecure = 'ssl';
                             $mail->Port = 465;
             
-                            $mail->setFrom('admin@yourdomain.com', 'Appointment Booking'); // Change this
+                            $mail->setFrom('admin@yourdomain.com', 'Appointment Booking'); 
                             $mail->addAddress($email, $name);
             
                             $mail->isHTML(true);
